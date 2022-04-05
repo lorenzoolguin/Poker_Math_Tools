@@ -4,19 +4,10 @@
 #include <string>
 #include <ctime>
 #include <cstdlib>
+#include <iomanip>
 
 using namespace std;
 
-
-/* void shuffle(){
-    int n,m,temp;
-    for (n=0; n<52; n++){
-        m=rand()%52;
-        temp = deck[n];
-        deck[n] = deck[m];
-        deck[m] = temp;
-    }
-} */
 vector<string> deck;
 vector<string> player_hand;
 vector<string> flop;
@@ -25,20 +16,17 @@ vector<string> river;
 
 
 class Poker{
-    
     public:
-
 
         vector<string> build_deck(){
             string suit[] = {"S", "D", "C", "H"};
             char rank[] = {'A','2','3','4','5','6','7','8','9','T','J','Q','K'};
-
             for (int j =0; j<4; j++){
                 for (int i=0; i<13; i++){
                     deck.push_back(rank[i] + suit[j]);
                 }
             }
-        //vector<string> deck;
+        //returns shuffled deck
         // Shuffle the deck
         //random_shuffle(deck.begin(),deck.end());
         // One of these 2 ways to shuffle
@@ -50,10 +38,9 @@ class Poker{
             //     deck[n] = deck[m];
             //     deck[m] = temp;
             // }
-
-            return deck; // returns shuffled deck
-
+            return deck; 
         }
+
 
         void print_deck(){
             cout << "Deck Size: " << deck.size() << endl;
@@ -67,23 +54,19 @@ class Poker{
                 
             }
         }
-        // selects the next 2 cards from the deck, based on the randomized deck
-        vector<string> get_player_hand(){  
-            int k = 0;
-            while(k < 2){
-                player_hand.push_back(deck[deck.size()-1]);
-                deck.pop_back();
-                k+=1;
-            }
-            return player_hand;
-        }
-        //allows you to choose the 2 cards given preflop
-        // if (std::find(v.begin(), v.end(), key) != v.end()) {
-        //     std::cout << "Element found";
+
+    
+        // selects the next 2 cards from the deck, not used
+        // vector<string> get_player_hand(){  
+        //     int k = 0;
+        //     while(k < 2){
+        //         player_hand.push_back(deck[deck.size()-1]);
+        //         deck.pop_back();
+        //         k+=1;
+        //     }
+        //     return player_hand;
         // }
-        // else {
-        //     std::cout << "Element not found";
-        // }
+
         vector<string> choose_player_hand(){  
             int k = 0;
             while(k < 2){
@@ -110,8 +93,6 @@ class Poker{
                 }
             }
         
-
-
 
         void print_flop(){
             cout << "Flop: ";
@@ -140,8 +121,6 @@ class Poker{
                 else{cout << "Try Again"<< endl;};
             }
             return flop;
-
-            
         }
 
 
@@ -161,8 +140,6 @@ class Poker{
                 else{cout << "Try Again"<< endl;};
             }
             return turn;
-
-            
         }
 
         void print_turn(){
@@ -186,11 +163,20 @@ class Poker{
         }
 
 
-        float card_equity(){
+        float card_equity(char hand_location){
+            // (outs * 2) + 1 if more than 5 outs; + 2 if more than 13 outs
+            // flop->river (outs*4) - (outs-8) if more than 9 outs
             float num_outs;
+            float card_eq;
             cout << "\nNumber of Outs: ";
             cin >> num_outs;
-            float card_eq = (num_outs*2) + 1;
+            if (hand_location = 'f'){
+                card_eq = (num_outs/47);
+            }
+            if (hand_location='t'){
+                card_eq = (num_outs/46);
+            }
+            
             return card_eq;
         }
 
@@ -220,6 +206,21 @@ class Poker{
             }
 
 
+        void move_on(float potodds, const float cardequity){
+            cout << "Pot Odds: " << setprecision(2) << potodds << "   " << setprecision(2) << "Card Equity: " << cardequity;
+            char move_on;
+            int n=0;
+            while (n < 1){
+                cout << "\nMove On? (y/n)    ";
+                cin >> move_on;
+                if (move_on == 'y'){n=1;
+                }
+                else{
+                    potodds = pot_odds();
+                    cout << "\nPot Odds: " << setprecision(2) << potodds << "    " << "Card Equity: " << setprecision(2) << cardequity;
+                }
+            }
+        }
 };
  
 
@@ -239,22 +240,8 @@ int main()
     deck.print_phand();
     
     float pof = deck.pot_odds();
-    float cef = deck.card_equity();
-    cout << "Pot Odds: " << pof << "%    " << "Card Equity: " << cef << "%";
-    char move_on;
-    int n=0;
-    while (n < 1){
-        cout << "\nMove On? (y/n)" << endl;
-        cin >> move_on;
-        if (move_on == 'y'){
-            n=1;
-        }
-        else{
-            pof = deck.pot_odds();
-            cout << "Pot Odds: " << pof << "    " << "Card Equity: " << cef << "%";
-        }
-
-    }
+    float cef = deck.card_equity('f');
+    deck.move_on(pof, cef);
     //another check for when someone re-raises
 
     //deck.print_deck();
@@ -263,46 +250,16 @@ int main()
     deck.print_turn();
 
     float pot = deck.pot_odds(); // pot = pot odds turn, nothing to do with pot size
-    float cet = deck.card_equity();
-    cout << "Pot Odds: " << pot << "%   " << "Card Equity: " << cet << "%";
-    char move_on1;
-    int n1=0;
-    while (n1 < 1){
-        cout << "\nMove On? (y/n)" << endl;
-        cin >> move_on1;
-        if (move_on1 == 'y'){
-            n1=1;
-        }
-        else{
-            pot = deck.pot_odds();
-            cout << "Pot Odds: " << pot << "    " << "Card Equity: " << cet << "%";
-        }
-
-    }
+    float cet = deck.card_equity('t');
+    deck.move_on(pot, cet);
 
     deck.choose_river();
     deck.print_phand();
     deck.print_river();
 
     float por = deck.pot_odds();
-    float cer = deck.card_equity();
-    cout << "Pot Odds: " << por << "%   " << "Card Equity: " << cer << "%";
-    char move_on2;
-    int n2=0;
-    while (n2 < 1){
-        cout << "\nMove On? (y/n)    ";
-        cin >> move_on2;
-        if (move_on2 == 'y'){
-            n2=1;
-        }
-        else{
-            por = deck.pot_odds();
-            cout << "Pot Odds: " << por << "    " << "Card Equity: " << cer << "%";
-        }
-
-    }
-
-
+    float cer = deck.card_equity('r');
+    deck.move_on(por, cer);
 
     //printf('%d\n', deck);
     
